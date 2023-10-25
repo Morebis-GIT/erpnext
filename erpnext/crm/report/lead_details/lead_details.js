@@ -31,22 +31,29 @@ frappe.query_reports["Lead Details"] = {
 			"label": __("Status"),
 			"fieldtype": "Select",
 			options: [
-				{ "value": "Lead", "label": __("Lead") },
-				{ "value": "Open", "label": __("Open") },
+				{ "value": "empty", "label": __("All") },
+				{ "value": "No reply", "label": __("No reply") },
 				{ "value": "Replied", "label": __("Replied") },
-				{ "value": "Opportunity", "label": __("Opportunity") },
-				{ "value": "Quotation", "label": __("Quotation") },
-				{ "value": "Lost Quotation", "label": __("Lost Quotation") },
-				{ "value": "Interested", "label": __("Interested") },
-				{ "value": "Converted", "label": __("Converted") },
-				{ "value": "Do Not Contact", "label": __("Do Not Contact") },
+				{ "value": "Cold", "label": __("Cold") },
+				{ "value": "Warm", "label": __("Warm") },
+				{ "value": "Hot", "label": __("Hot") },
+				{ "value": "Closed", "label": __("Closed") },
+				{ "value": "Lost", "label": __("Lost") },
+				{ "value": "On hold", "label": __("On hold") },
 			],
 		},
 		{
-			"fieldname":"territory",
-			"label": __("Territory"),
+			"fieldname":"lead_owner",
+			"label": __("Lead Owner"),
 			"fieldtype": "Link",
-			"options": "Territory",
-		}
+			"options": "User",
+		},
+		{
+			"fieldname":"lead_source",
+			"label": __("Lead Source"),
+			"fieldtype": "Link",
+			"options": "Lead Source",
+		},
+		
 	]
 };
