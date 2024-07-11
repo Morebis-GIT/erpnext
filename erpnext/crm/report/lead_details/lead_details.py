@@ -30,13 +30,7 @@ def get_columns():
 			"options": "User",
 			"width": 100,
 		},
-		{
-			"label": _("Territory"),
-			"fieldname": "territory",
-			"fieldtype": "Link",
-			"options": "Territory",
-			"width": 100,
-		},
+		# Devtorium changes: remove column Territtory
 		{"label": _("Source"), "fieldname": "source", "fieldtype": "Data", "width": 120},
 		{"label": _("Email"), "fieldname": "email_id", "fieldtype": "Data", "width": 120},
 		{"label": _("Mobile"), "fieldname": "mobile_no", "fieldtype": "Data", "width": 120},
@@ -68,43 +62,58 @@ def get_columns():
 	]
 	return columns
 
-
+# Devtorium changes start
 def get_data(filters):
-	lead = frappe.qb.DocType("Lead")
-	address = frappe.qb.DocType("Address")
-	dynamic_link = frappe.qb.DocType("Dynamic Link")
-
-	query = (
-		frappe.qb.from_(lead)
-		.left_join(dynamic_link)
-		.on((lead.name == dynamic_link.link_name) & (dynamic_link.parenttype == "Address"))
-		.left_join(address)
-		.on(address.name == dynamic_link.parent)
-		.select(
-			lead.name,
-			lead.lead_name,
-			lead.status,
-			lead.lead_owner,
-			lead.territory,
-			lead.source,
-			lead.email_id,
-			lead.mobile_no,
-			lead.phone,
-			lead.owner,
-			lead.company,
-			(Concat_ws(", ", address.address_line1, address.address_line2)).as_("address"),
-			address.state,
-			address.pincode,
-			address.country,
-		)
-		.where(lead.company == filters.company)
-		.where(Date(lead.creation).between(filters.from_date, filters.to_date))
+	return frappe.db.sql(
+		"""
+		SELECT
+			`tabLead`.name,
+			`tabLead`.lead_name,
+			`tabLead`.status,
+			`tabLead`.lead_owner,
+			`tabLead`.source,
+			`tabLead`.email_id,
+			`tabLead`.mobile_no,
+			`tabLead`.phone,
+			`tabLead`.owner,
+			`tabLead`.company,
+			concat_ws(', ',
+				trim(',' from `tabAddress`.address_line1),
+				trim(',' from tabAddress.address_line2)
+			) AS address,
+			`tabAddress`.state,
+			`tabAddress`.pincode,
+			`tabAddress`.country
+		FROM
+			`tabLead` left join `tabDynamic Link` on (
+			`tabLead`.name = `tabDynamic Link`.link_name and
+			`tabDynamic Link`.parenttype = 'Address')
+			left join `tabAddress` on (
+			`tabAddress`.name=`tabDynamic Link`.parent)
+		WHERE
+			company = %(company)s
+			AND `tabLead`.creation BETWEEN %(from_date)s AND %(to_date)s
+			{conditions}
+		ORDER BY
+			`tabLead`.creation asc """.format(
+			conditions=get_conditions(filters)
+		),
+		filters,
+		as_dict=1,
 	)
 
-	if filters.get("territory"):
-		query = query.where(lead.territory == filters.get("territory"))
 
-	if filters.get("status"):
-		query = query.where(lead.status == filters.get("status"))
+def get_conditions(filters):
+	conditions = []
 
-	return query.run(as_dict=1)
+	if filters.get("lead_owner"):
+		conditions.append(" and `tabLead`.lead_owner=%(lead_owner)s")
+
+	if filters.get("status") and filters.get("status") != "empty":
+		conditions.append(" and `tabLead`.status=%(status)s")
+
+	if filters.get("lead_source"):
+		conditions.append(" and `tabLead`.source=%(lead_source)s")
+
+	return " ".join(conditions) if conditions else ""
+# Devtorium changes end
