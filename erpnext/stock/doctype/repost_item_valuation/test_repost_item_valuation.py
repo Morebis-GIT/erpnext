@@ -5,7 +5,7 @@
 from unittest.mock import MagicMock, call
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests.utils import FrappeTestCase, change_settings
 from frappe.utils import add_days, add_to_date, now, nowdate, today
 
 from erpnext.accounts.doctype.sales_invoice.test_sales_invoice import create_sales_invoice
@@ -179,7 +179,6 @@ class TestRepostItemValuation(FrappeTestCase, StockTestMixin):
 		riv3.set_status("Skipped")
 
 	def test_stock_freeze_validation(self):
-
 		today = nowdate()
 
 		riv = frappe.get_doc(
@@ -200,6 +199,7 @@ class TestRepostItemValuation(FrappeTestCase, StockTestMixin):
 
 		riv.set_status("Skipped")
 
+	@change_settings("Stock Reposting Settings", {"item_based_reposting": 0})
 	def test_prevention_of_cancelled_transaction_riv(self):
 		frappe.flags.dont_execute_stock_reposts = True
 
@@ -377,6 +377,7 @@ class TestRepostItemValuation(FrappeTestCase, StockTestMixin):
 		accounts_settings.acc_frozen_upto = ""
 		accounts_settings.save()
 
+	@change_settings("Stock Reposting Settings", {"item_based_reposting": 0})
 	def test_create_repost_entry_for_cancelled_document(self):
 		pr = make_purchase_receipt(
 			company="_Test Company with perpetual inventory",
@@ -422,3 +423,38 @@ class TestRepostItemValuation(FrappeTestCase, StockTestMixin):
 
 		self.assertRaises(frappe.ValidationError, riv.save)
 		doc.cancel()
+
+	def test_remove_attached_file(self):
+		item_code = make_item("_Test Remove Attached File Item", properties={"is_stock_item": 1})
+
+		make_purchase_receipt(
+			item_code=item_code,
+			qty=1,
+			rate=100,
+		)
+
+		pr1 = make_purchase_receipt(
+			item_code=item_code,
+			qty=1,
+			rate=100,
+			posting_date=add_days(today(), days=-1),
+		)
+
+		if docname := frappe.db.exists("Repost Item Valuation", {"voucher_no": pr1.name}):
+			self.assertFalse(
+				frappe.db.get_value(
+					"File",
+					{"attached_to_doctype": "Repost Item Valuation", "attached_to_name": docname},
+					"name",
+				)
+			)
+		else:
+			repost_entries = create_item_wise_repost_entries(pr1.doctype, pr1.name)
+			for entry in repost_entries:
+				self.assertFalse(
+					frappe.db.get_value(
+						"File",
+						{"attached_to_doctype": "Repost Item Valuation", "attached_to_name": entry.name},
+						"name",
+					)
+				)
