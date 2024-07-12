@@ -1,7 +1,6 @@
 {
  "actions": [],
  "creation": "2013-06-24 15:49:57",
- "description": "Settings for Accounts",
  "doctype": "DocType",
  "document_type": "Other",
  "editable_grid": 1,
@@ -13,6 +12,7 @@
   "unlink_advance_payment_on_cancelation_of_order",
   "column_break_13",
   "delete_linked_ledger_entries",
+  "enable_immutable_ledger",
   "invoicing_features_section",
   "check_supplier_invoice_uniqueness",
   "automatically_fetch_payment_terms",
@@ -66,7 +66,12 @@
   "show_balance_in_coa",
   "banking_tab",
   "enable_party_matching",
-  "enable_fuzzy_matching"
+  "enable_fuzzy_matching",
+  "reports_tab",
+  "remarks_section",
+  "general_ledger_remarks_length",
+  "column_break_lvjk",
+  "receivable_payable_remarks_length"
  ],
  "fields": [
   {
@@ -101,7 +106,7 @@
   },
   {
    "default": "0",
-   "description": "Enabling ensure each Purchase Invoice has a unique value in Supplier Invoice No. field",
+   "description": "Enabling this ensures each Purchase Invoice has a unique value in Supplier Invoice No. field within a particular fiscal year",
    "fieldname": "check_supplier_invoice_uniqueness",
    "fieldtype": "Check",
    "label": "Check Supplier Invoice Number Uniqueness"
@@ -422,6 +427,41 @@
    "fieldname": "round_row_wise_tax",
    "fieldtype": "Check",
    "label": "Round Tax Amount Row-wise"
+  },
+  {
+   "fieldname": "reports_tab",
+   "fieldtype": "Tab Break",
+   "label": "Reports"
+  },
+  {
+   "default": "0",
+   "description": "Truncates 'Remarks' column to set character length",
+   "fieldname": "general_ledger_remarks_length",
+   "fieldtype": "Int",
+   "label": "General Ledger"
+  },
+  {
+   "default": "0",
+   "description": "Truncates 'Remarks' column to set character length",
+   "fieldname": "receivable_payable_remarks_length",
+   "fieldtype": "Int",
+   "label": "Accounts Receivable/Payable"
+  },
+  {
+   "fieldname": "column_break_lvjk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks_section",
+   "fieldtype": "Section Break",
+   "label": "Remarks Column Length"
+  },
+  {
+   "default": "0",
+   "description": "On enabling this cancellation entries will be posted on the actual cancellation date and reports will consider cancelled entries as well",
+   "fieldname": "enable_immutable_ledger",
+   "fieldtype": "Check",
+   "label": "Enable Immutable Ledger"
   }
  ],
  "icon": "icon-cog",
@@ -429,7 +469,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-08-28 00:12:02.740633",
+ "modified": "2024-05-11 23:19:44.673975",
  "modified_by": "Administrator",
  "module": "Accounts",
  "name": "Accounts Settings",
